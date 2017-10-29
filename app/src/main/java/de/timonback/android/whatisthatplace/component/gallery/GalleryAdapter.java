@@ -1,4 +1,4 @@
-package de.timonback.android.whatisthatplace.component;
+package de.timonback.android.whatisthatplace.component.gallery;
 
 
 import android.content.Context;
@@ -14,16 +14,21 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import de.timonback.android.whatisthatplace.R;
+import de.timonback.android.whatisthatplace.component.MyCallable;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryHolder> {
-    private List<GalleryItem> galleryList;
-    private Context context;
+    private final List<GalleryItem> galleryList;
+    private final Context context;
 
-    public GalleryAdapter(Context context, List<GalleryItem> galleryList) {
+    private final MyCallable<GalleryItem> onClickCallable;
+
+    public GalleryAdapter(Context context, List<GalleryItem> galleryList, MyCallable<GalleryItem> clickCallable) {
         this.galleryList = galleryList;
         this.context = context;
+        this.onClickCallable = clickCallable;
     }
 
     @Override
@@ -33,7 +38,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryH
     }
 
     @Override
-    public void onBindViewHolder(GalleryAdapter.GalleryHolder viewHolder, int i) {
+    public void onBindViewHolder(final GalleryAdapter.GalleryHolder viewHolder, final int i) {
         viewHolder.title.setText(getItem(i).getTitle());
         viewHolder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
@@ -43,6 +48,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryH
             @Override
             public void onClick(View v) {
                 Toast.makeText(context, "Image", Toast.LENGTH_SHORT).show();
+
+                onClickCallable.call(getItem(i));
             }
         });
     }

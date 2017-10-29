@@ -1,12 +1,7 @@
 package de.timonback.android.whatisthatplace.activity;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,23 +11,23 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import de.timonback.android.whatisthatplace.Constants;
 import de.timonback.android.whatisthatplace.R;
+import de.timonback.android.whatisthatplace.activity.provider.DBProvider;
 import de.timonback.android.whatisthatplace.component.CameraComponent;
-import de.timonback.android.whatisthatplace.component.GalleryAdapter;
-import de.timonback.android.whatisthatplace.component.GalleryItem;
+import de.timonback.android.whatisthatplace.component.MyCallable;
+import de.timonback.android.whatisthatplace.component.database.VisionResultDbHelper;
+import de.timonback.android.whatisthatplace.component.gallery.GalleryAdapter;
+import de.timonback.android.whatisthatplace.component.gallery.GalleryItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DBProvider {
     private static final String LOG_NAME = MainActivity.class.getName();
 
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-
+    private VisionResultDbHelper gVisionDb = null;
     private CameraComponent cameraComponent = null;
 
     @Override
@@ -40,20 +35,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        gVisionDb = new VisionResultDbHelper(this);
         cameraComponent = new CameraComponent();
+        //gVisionComponent = new GVisionComponent();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        RecyclerView recyclerView = (RecyclerView)findViewById(R.id.imagegallery);
-        recyclerView.setHasFixedSize(true);
+        if (savedInstanceState == null) {
+            GalleryFragment gallyerFragment = GalleryFragment.newInstance(this);
 
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(),3);
-        recyclerView.setLayoutManager(layoutManager);
-
-        ArrayList<GalleryItem> createLists = prepareData();
-        GalleryAdapter adapter = new GalleryAdapter(getApplicationContext(), createLists);
-        recyclerView.setAdapter(adapter);
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, gallyerFragment).commit();
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -64,22 +58,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private ArrayList<GalleryItem> prepareData() {
-        ArrayList<GalleryItem> items = new ArrayList<>();
-        File folder = getExternalFilesDir(Constants.DIR_PIC);
-
-        for(File file: folder.listFiles()) {
-            items.add(new GalleryItem(file.getName(), file));
-        }
-
-        return items;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        gVisionDb.close();
+        super.onDestroy();
     }
 
     @Override
@@ -94,5 +83,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public VisionResultDbHelper getDB() {
+        return gVisionDb;
     }
 }

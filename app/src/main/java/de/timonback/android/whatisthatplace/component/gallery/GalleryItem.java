@@ -1,4 +1,4 @@
-package de.timonback.android.whatisthatplace.component;
+package de.timonback.android.whatisthatplace.component.gallery;
 
 import java.io.File;
 
