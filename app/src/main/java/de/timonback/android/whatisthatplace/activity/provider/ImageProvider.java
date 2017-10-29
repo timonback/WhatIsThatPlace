@@ -8,12 +8,25 @@ import android.provider.MediaStore;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class ImageProvider {
+    private static final Comparator<File> modifiedComparator = new Comparator<File>() {
+        @Override
+        public int compare(File o1, File o2) {
+            if(o1.lastModified() > o2.lastModified()) {
+                return -1;
+            }
+            return 1;
+        }
+    };
+
     public static List<File> getFilePaths(Context context) {
         List<File> resultIAV = new ArrayList<>();
 
@@ -68,6 +81,9 @@ public class ImageProvider {
                 }
             }
         }
+
+
+        Collections.sort(resultIAV, modifiedComparator);
 
         return resultIAV;
     }

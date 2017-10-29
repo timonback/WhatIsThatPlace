@@ -42,7 +42,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryH
         viewHolder.title.setText(getItem(i).getTitle());
         viewHolder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-        Picasso.with(context).load(getItem(i).getImageFile()).resize(240, 120).into(viewHolder.img);
+        Picasso.with(context).load(getItem(i).getImageFile()).centerCrop().resize(240, 120).into(viewHolder.img);
 
         viewHolder.img.setOnClickListener(new OnClickListener() {
             @Override
