@@ -5,9 +5,8 @@
     tools:context="de.timonback.android.whatisthatplace.activity.GalleryFragment">
 
     <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/imagegallery"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content" />
 
 </FrameLayout>

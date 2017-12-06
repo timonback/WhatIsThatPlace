@@ -1,67 +1,91 @@
 package de.timonback.android.whatisthatplace.activity;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.File;
-import java.util.ArrayList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Ordering;
 
-import de.timonback.android.whatisthatplace.Constants;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import de.timonback.android.whatisthatplace.R;
-import de.timonback.android.whatisthatplace.activity.provider.DBProvider;
 import de.timonback.android.whatisthatplace.activity.provider.ImageProvider;
-import de.timonback.android.whatisthatplace.component.MyCallable;
-import de.timonback.android.whatisthatplace.component.database.VisionResultDbHelper;
-import de.timonback.android.whatisthatplace.component.gallery.GalleryAdapter;
 import de.timonback.android.whatisthatplace.component.gallery.GalleryItem;
+import de.timonback.android.whatisthatplace.component.gallery.GallerySection;
+import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 public class GalleryFragment extends Fragment {
     public static final String LOG_NAME = GalleryFragment.class.getName();
 
-    private DBProvider dbProvider;
+    private SectionedRecyclerViewAdapter sectionAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gallery, container, false);
 
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.imagegallery);
-        recyclerView.setHasFixedSize(true);
+        sectionAdapter = new SectionedRecyclerViewAdapter();
 
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(),3);
-        recyclerView.setLayoutManager(layoutManager);
+        prepareData();
 
-        ArrayList<GalleryItem> createLists = prepareData();
-        GalleryAdapter adapter = new GalleryAdapter(getActivity(), createLists, new MyCallable<GalleryItem>() {
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.imagegallery);
+
+        GridLayoutManager glm = new GridLayoutManager(getContext(), 3);
+        glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
-            public void call(GalleryItem item) {
-                Log.i(LOG_NAME, "Gallery Click");
-                String filePath = item.getImageFile().getPath();
-
-                //gVisionComponent.analyze(filePath, GVisionComponent.FEATURE.LANDMARK);
+            public int getSpanSize(int position) {
+                switch (sectionAdapter.getSectionItemViewType(position)) {
+                    case SectionedRecyclerViewAdapter.VIEW_TYPE_HEADER:
+                        return 3;
+                    default:
+                        return 1;
+                }
             }
         });
-        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(glm);
+        recyclerView.setAdapter(sectionAdapter);
 
         return view;
     }
 
-    private ArrayList<GalleryItem> prepareData() {
-        ArrayList<GalleryItem> items = new ArrayList<>();
+    private void prepareData() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
 
-        for(File image: ImageProvider.getFilePaths(getActivity())) {
-            items.add(new GalleryItem(image.getName(), image));
+        ListMultimap<String, File> treeListMultimap =
+                MultimapBuilder.treeKeys(Ordering.natural().reverse()).arrayListValues().build();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -1);
+        Date modifiedOneYearAgo = calendar.getTime();
+
+        for (File image : ImageProvider.getFilePaths(getActivity())) {
+            if (new Date(image.lastModified()).after(modifiedOneYearAgo)) {
+                treeListMultimap.put(sdf.format(image.lastModified()), image);
+            }
         }
 
-        return items;
+        for (Map.Entry<String, Collection<File>> entry : treeListMultimap.asMap().entrySet()) {
+            List<GalleryItem> galleryItems = new ArrayList<>();
+            for (File galleryFile : entry.getValue()) {
+                galleryItems.add(new GalleryItem(galleryFile.getName(), galleryFile));
+            }
+
+            GallerySection section = new GallerySection(getActivity(), entry.getKey(), galleryItems);
+            sectionAdapter.addSection(section);
+        }
     }
 
     /**
@@ -70,9 +94,8 @@ public class GalleryFragment extends Fragment {
      *
      * @return A new instance of fragment GalleryFragment.
      */
-    public static GalleryFragment newInstance(DBProvider dbProvider) {
+    public static GalleryFragment newInstance() {
         GalleryFragment fragment = new GalleryFragment();
-        fragment.dbProvider = dbProvider;
 
         Bundle args = new Bundle();
         fragment.setArguments(args);

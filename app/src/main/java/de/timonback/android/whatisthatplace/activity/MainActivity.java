@@ -3,31 +3,17 @@ package de.timonback.android.whatisthatplace.activity;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
-
-import java.io.File;
-import java.util.ArrayList;
-
-import de.timonback.android.whatisthatplace.Constants;
 import de.timonback.android.whatisthatplace.R;
-import de.timonback.android.whatisthatplace.activity.provider.DBProvider;
 import de.timonback.android.whatisthatplace.component.CameraComponent;
-import de.timonback.android.whatisthatplace.component.MyCallable;
-import de.timonback.android.whatisthatplace.component.database.VisionResultDbHelper;
-import de.timonback.android.whatisthatplace.component.gallery.GalleryAdapter;
-import de.timonback.android.whatisthatplace.component.gallery.GalleryItem;
 
-public class MainActivity extends AppCompatActivity implements DBProvider {
+public class MainActivity extends AppCompatActivity {
     private static final String LOG_NAME = MainActivity.class.getName();
 
-    private VisionResultDbHelper gVisionDb = null;
     private CameraComponent cameraComponent = null;
 
     @Override
@@ -35,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements DBProvider {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        gVisionDb = new VisionResultDbHelper(this);
         cameraComponent = new CameraComponent();
         //gVisionComponent = new GVisionComponent();
 
@@ -43,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements DBProvider {
         setSupportActionBar(toolbar);
 
         if (savedInstanceState == null) {
-            GalleryFragment gallyerFragment = GalleryFragment.newInstance(this);
+            GalleryFragment gallyerFragment = GalleryFragment.newInstance();
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, gallyerFragment).commit();
@@ -67,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements DBProvider {
 
     @Override
     protected void onDestroy() {
-        gVisionDb.close();
         super.onDestroy();
     }
 
@@ -83,10 +67,5 @@ public class MainActivity extends AppCompatActivity implements DBProvider {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public VisionResultDbHelper getDB() {
-        return gVisionDb;
     }
 }

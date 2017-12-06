@@ -7,19 +7,20 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiFactory {
-    private static final String URL_APP = "http://cubie.timonback.de:8008";
+    private static final String URL_APP = "http://vision.timonback.de:8888";
 
     private static final ApiFactory instance = new ApiFactory();
 
+    private final KnowledgeApi knowledgeApi;
     private final VisionServiceApi visionServiceApi;
 
     private ApiFactory() {
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
@@ -41,9 +42,13 @@ public class ApiFactory {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
+        knowledgeApi = retrofit.create(KnowledgeApi.class);
         visionServiceApi = retrofit.create(VisionServiceApi.class);
     }
 
+    public static KnowledgeApi getKnowledgeApi() {
+        return instance.knowledgeApi;
+    }
     public static VisionServiceApi getVisionServiceApi() {
         return instance.visionServiceApi;
     }
