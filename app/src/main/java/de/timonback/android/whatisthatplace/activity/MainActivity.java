@@ -1,7 +1,9 @@
 package de.timonback.android.whatisthatplace.activity;
 
+import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -10,10 +12,10 @@ import android.view.View;
 
 import de.timonback.android.whatisthatplace.R;
 import de.timonback.android.whatisthatplace.component.CameraComponent;
+import de.timonback.android.whatisthatplace.component.gallery.GallerySection;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GalleryFragment.OnChangeFragmentListener {
     private static final String LOG_NAME = MainActivity.class.getName();
-
     private CameraComponent cameraComponent = null;
 
     @Override
@@ -22,17 +24,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cameraComponent = new CameraComponent();
-        //gVisionComponent = new GVisionComponent();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        if (savedInstanceState == null) {
-            GalleryFragment gallyerFragment = GalleryFragment.newInstance();
-
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, gallyerFragment).commit();
-        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -51,11 +45,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -67,5 +56,41 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFragmentChange(String imagePath) {
+        VisionFragment visionFrag = (VisionFragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_vision);
+
+        if (visionFrag != null) {
+            // We're in two-pane layout...
+            if(imagePath == null) {
+                getSupportFragmentManager().beginTransaction().detach(visionFrag);
+            }
+
+            // Call a method in the ArticleFragment to update its content
+            visionFrag.updateImage(imagePath);
+        } else {
+            // Otherwise, we're in the one-pane layout and must swap frags...
+
+            if(imagePath != null) {
+                // Create fragment and give it an argument for the selected article
+                VisionFragment newFragment = new VisionFragment();
+                Bundle args = new Bundle();
+                args.putString(VisionFragment.ARG_IMAGE_PATH, imagePath);
+                newFragment.setArguments(args);
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.replace(R.id.fragment_vision, newFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+            }
+        }
     }
 }

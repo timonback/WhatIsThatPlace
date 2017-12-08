@@ -1,5 +1,8 @@
 package de.timonback.android.whatisthatplace.activity;
 
+import android.app.Activity;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -7,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
@@ -25,11 +29,20 @@ import de.timonback.android.whatisthatplace.R;
 import de.timonback.android.whatisthatplace.activity.provider.ImageProvider;
 import de.timonback.android.whatisthatplace.component.gallery.GalleryItem;
 import de.timonback.android.whatisthatplace.component.gallery.GallerySection;
+import de.timonback.android.whatisthatplace.model.knowledge.KnowledgeResult;
+import de.timonback.android.whatisthatplace.model.vision.VisionResult;
+import de.timonback.android.whatisthatplace.service.ServiceProvider;
+import de.timonback.android.whatisthatplace.util.MyParamCallable;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
-public class GalleryFragment extends Fragment {
+public class GalleryFragment extends Fragment implements GallerySection.OnGalleryItemClickListener {
+    public interface OnChangeFragmentListener {
+        void onFragmentChange(String path);
+    }
+
     public static final String LOG_NAME = GalleryFragment.class.getName();
 
+    private OnChangeFragmentListener contextCallback;
     private SectionedRecyclerViewAdapter sectionAdapter;
 
     @Override
@@ -61,6 +74,37 @@ public class GalleryFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @return A new instance of fragment GalleryFragment.
+     */
+    public static GalleryFragment newInstance() {
+        GalleryFragment fragment = new GalleryFragment();
+
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            contextCallback = (OnChangeFragmentListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnChangeFragmentListener");
+        }
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
     private void prepareData() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
 
@@ -83,29 +127,16 @@ public class GalleryFragment extends Fragment {
                 galleryItems.add(new GalleryItem(galleryFile.getName(), galleryFile));
             }
 
-            GallerySection section = new GallerySection(getActivity(), entry.getKey(), galleryItems);
+            GallerySection section = new GallerySection(getActivity(), entry.getKey(), galleryItems, this);
             sectionAdapter.addSection(section);
         }
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment GalleryFragment.
-     */
-    public static GalleryFragment newInstance() {
-        GalleryFragment fragment = new GalleryFragment();
-
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
+    public void clicked(GalleryItem item) {
+        final Context context = getContext();
+        final File file = item.getImageFile();
+
+        contextCallback.onFragmentChange(file.getPath());
     }
 }

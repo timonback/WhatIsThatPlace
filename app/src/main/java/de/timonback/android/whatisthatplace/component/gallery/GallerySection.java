@@ -23,15 +23,19 @@ import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 import io.github.luizgrp.sectionedrecyclerviewadapter.StatelessSection;
 
 public class GallerySection extends StatelessSection {
+    public interface OnGalleryItemClickListener {
+        void clicked(GalleryItem item);
+    }
     private static final String LOG_NAME = GallerySection.class.getName();
 
     private final Context context;
     private final String title;
     private final List<GalleryItem> list;
+    private final OnGalleryItemClickListener listener;
 
     boolean expanded = true;
 
-    public GallerySection(Context context, String title, List<GalleryItem> collection) {
+    public GallerySection(Context context, String title, List<GalleryItem> collection, OnGalleryItemClickListener listener) {
         super(new SectionParameters.Builder(R.layout.gallery_cell)
                 .headerResourceId(R.layout.gallery_header)
                 .build());
@@ -39,6 +43,7 @@ public class GallerySection extends StatelessSection {
         this.context = context;
         this.title = title;
         this.list = collection;
+        this.listener = listener;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class GallerySection extends StatelessSection {
     }
 
     @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindItemViewHolder(RecyclerView.ViewHolder holder, final int position) {
         final ItemViewHolder itemHolder = (ItemViewHolder) holder;
 
         String name = list.get(position).getTitle();
@@ -67,30 +72,7 @@ public class GallerySection extends StatelessSection {
         itemHolder.image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ServiceProvider.getVisionService(context).analyse(Uri.fromFile(file), new MyParamCallable<VisionResult>() {
-                    @Override
-                    public void call(VisionResult param) {
-                        if (param.getLandmarks().isEmpty()) {
-                            Toast.makeText(context, "no landmark identified", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        String mid = param.getLandmarks().get(0).getMid();
-                        ServiceProvider.getKnowledgeService(context).getKnowledgeInfo(mid, new MyParamCallable<KnowledgeResult>() {
-                            @Override
-                            public void call(KnowledgeResult param) {
-                                if (param.getItemListElement().isEmpty()) {
-                                    Toast.makeText(context, "Google seems to not know this place...", Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-                                String name = param.getItemListElement().get(0).getResult().getName();
-                                String description = param.getItemListElement().get(0).getResult().getDescription();
-                                Toast.makeText(context, "This is " + name, Toast.LENGTH_SHORT).show();
-                                Toast.makeText(context, description, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
+                listener.clicked(list.get(position));
             }
         });
     }

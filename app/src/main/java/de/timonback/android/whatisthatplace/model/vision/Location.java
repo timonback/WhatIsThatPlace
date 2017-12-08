@@ -1,14 +1,14 @@
 package de.timonback.android.whatisthatplace.model.vision;
 
 public class Location {
-    private String longitude;
-    private String latitude;
+    private Double longitude;
+    private Double latitude;
 
-    public String getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public String getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 

@@ -8,11 +8,19 @@
     tools:context="de.timonback.android.whatisthatplace.activity.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <fragment
+        android:id="@+id/fragment_gallery"
+        android:name="de.timonback.android.whatisthatplace.activity.GalleryFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteY="8dp"
         tools:layout_editor_absoluteX="8dp" />
+
+    <FrameLayout
+        android:id="@+id/fragment_vision"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
 
 </RelativeLayout>
