@@ -22,13 +22,6 @@ jobs:
       - restore_cache:
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
-          name: Install screenshot gradle lib
-          command: |
-            mkdir ~/gradle-screenshot-lib
-            git clone https://github.com/facebook/screenshot-tests-for-android ~/gradle-screenshot-lib
-            cd ~/gradle-screenshot-lib
-            ~/gradle-screenshot-lib/gradlew installAll
-      - run:
           name: Download Dependencies
           command: ./gradlew androidDependencies
       - save_cache:
@@ -44,9 +37,6 @@ jobs:
       - run:
           name: Run emulator tests
           command: ./gradlew connectedAndroidTest
-      - run:
-          name: Take screenshots
-          command: ./gradlew screenshotTests
       - run:
           name: Build apk
           command: ./gradlew assembleRelease
