@@ -1,18 +1,15 @@
 package de.timonback.android.whatisthatplace.activity;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import de.timonback.android.whatisthatplace.R;
 import de.timonback.android.whatisthatplace.component.CameraComponent;
-import de.timonback.android.whatisthatplace.component.gallery.GallerySection;
 
 public class MainActivity extends AppCompatActivity implements GalleryFragment.OnChangeFragmentListener {
     private static final String LOG_NAME = MainActivity.class.getName();
@@ -27,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements GalleryFragment.O
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -37,12 +36,13 @@ public class MainActivity extends AppCompatActivity implements GalleryFragment.O
         });
     }
 
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

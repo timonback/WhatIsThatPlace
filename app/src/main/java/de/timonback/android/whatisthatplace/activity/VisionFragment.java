@@ -95,7 +95,14 @@ public class VisionFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void call(VisionResult param) {
                 if (param.getLandmarks().isEmpty()) {
-                    Toast.makeText(context, "no landmark identified", Toast.LENGTH_SHORT).show();
+                    String notFound = "no landmark identified";
+                    Toast.makeText(context, notFound, Toast.LENGTH_SHORT).show();
+
+                    TextView nameView = getActivity().findViewById(R.id.visionName);
+                    nameView.setText(notFound);
+                    TextView descriptionView = getActivity().findViewById(R.id.visionDescription);
+                    descriptionView.setText(notFound);
+
                     return;
                 }
 

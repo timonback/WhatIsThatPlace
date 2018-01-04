@@ -3,6 +3,7 @@ package de.timonback.android.whatisthatplace.activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -37,6 +38,7 @@ public class GalleryFragment extends Fragment implements GallerySection.OnGaller
 
     private OnChangeFragmentListener contextCallback;
     private SectionedRecyclerViewAdapter sectionAdapter;
+    private SwipeRefreshLayout refreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,6 +65,17 @@ public class GalleryFragment extends Fragment implements GallerySection.OnGaller
         });
         recyclerView.setLayoutManager(glm);
         recyclerView.setAdapter(sectionAdapter);
+
+        refreshLayout = (SwipeRefreshLayout)view.findViewById(R.id.swipeRefreshLayout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                prepareData();
+
+                refreshLayout.setRefreshing(false);
+            }
+        });
+        refreshLayout.setEnabled(true);
 
         return view;
     }
@@ -114,6 +127,7 @@ public class GalleryFragment extends Fragment implements GallerySection.OnGaller
             }
         }
 
+        sectionAdapter.removeAllSections();
         for (Map.Entry<String, Collection<File>> entry : treeListMultimap.asMap().entrySet()) {
             List<GalleryItem> galleryItems = new ArrayList<>();
             for (File galleryFile : entry.getValue()) {
@@ -123,6 +137,8 @@ public class GalleryFragment extends Fragment implements GallerySection.OnGaller
             GallerySection section = new GallerySection(getActivity(), entry.getKey(), galleryItems, this);
             sectionAdapter.addSection(section);
         }
+
+        sectionAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -135,5 +151,12 @@ public class GalleryFragment extends Fragment implements GallerySection.OnGaller
     @Override
     public void notifyDataSetChanged() {
         sectionAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        prepareData();
     }
 }
