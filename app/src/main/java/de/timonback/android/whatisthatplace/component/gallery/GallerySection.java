@@ -1,13 +1,10 @@
 package de.timonback.android.whatisthatplace.component.gallery;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -15,16 +12,13 @@ import java.io.File;
 import java.util.List;
 
 import de.timonback.android.whatisthatplace.R;
-import de.timonback.android.whatisthatplace.model.knowledge.KnowledgeResult;
-import de.timonback.android.whatisthatplace.model.vision.VisionResult;
-import de.timonback.android.whatisthatplace.service.ServiceProvider;
-import de.timonback.android.whatisthatplace.util.MyParamCallable;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 import io.github.luizgrp.sectionedrecyclerviewadapter.StatelessSection;
 
 public class GallerySection extends StatelessSection {
     public interface OnGalleryItemClickListener {
         void clicked(GalleryItem item);
+        void notifyDataSetChanged();
     }
     private static final String LOG_NAME = GallerySection.class.getName();
 
@@ -48,7 +42,7 @@ public class GallerySection extends StatelessSection {
 
     @Override
     public int getContentItemsTotal() {
-        return list.size();
+        return expanded? list.size() : 0;
     }
 
     @Override
@@ -61,7 +55,7 @@ public class GallerySection extends StatelessSection {
         final ItemViewHolder itemHolder = (ItemViewHolder) holder;
 
         String name = list.get(position).getTitle();
-        String category = list.get(position).getTitle();
+        String category = list.get(position).getDescription();
 
         itemHolder.mainText.setText(name);
         itemHolder.subText.setText(category);
@@ -84,20 +78,33 @@ public class GallerySection extends StatelessSection {
 
     @Override
     public void onBindHeaderViewHolder(RecyclerView.ViewHolder holder) {
-        HeaderViewHolder headerHolder = (HeaderViewHolder) holder;
+        final HeaderViewHolder headerHolder = (HeaderViewHolder) holder;
 
         headerHolder.title.setText(title);
+
+        headerHolder.rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                expanded = !expanded;
+                headerHolder.arrow.setImageResource(
+                        expanded ? R.drawable.ic_keyboard_arrow_up : R.drawable.ic_keyboard_arrow_down
+                );
+                listener.notifyDataSetChanged();
+            }
+        });
     }
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
+        private final View rootView;
         private final TextView title;
-        private final Button btnMore;
+        private final ImageView arrow;
 
         HeaderViewHolder(View view) {
             super(view);
 
+            rootView = view;
             title = (TextView) view.findViewById(R.id.header_title);
-            btnMore = (Button) view.findViewById(R.id.header_button);
+            arrow = (ImageView) view.findViewById(R.id.header_arrow);
         }
     }
 
