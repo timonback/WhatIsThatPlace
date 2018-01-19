@@ -30,19 +30,19 @@ public class VisionService {
         context = c;
     }
 
-    public void analyse(final Uri fileUri, final MyParamCallable<VisionResult> callback) {
+    public void analyse(final Uri fileUri, final MyParamCallable<VisionResult> callback, final MyCallable failureCallback) {
         final File file = FileUtils.getFile(context, fileUri);
         final String checksum = MD5.calculateMD5(file);
 
         checkForImageUpload(file, fileUri, checksum, new MyCallable() {
             @Override
             public void call() {
-                analyzeImage(checksum, callback);
+                analyzeImage(checksum, callback, failureCallback);
             }
-        });
+        }, failureCallback);
     }
 
-    private void checkForImageUpload(final File file, final Uri fileUri, final String checksum, final MyCallable callback) {
+    private void checkForImageUpload(final File file, final Uri fileUri, final String checksum, final MyCallable callback, final MyCallable failureCallback) {
         ApiFactory.getVisionServiceApi().isUploaded(checksum)
                 .enqueue(new Callback<Void>() {
                     @Override
@@ -60,6 +60,7 @@ public class VisionService {
                                 @Override
                                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                                     Log.e(LOG_NAME, t.getMessage());
+                                    failureCallback.call();
                                 }
                             });
                         } else {
@@ -70,7 +71,8 @@ public class VisionService {
 
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
-
+                        Log.e(LOG_NAME, t.getMessage());
+                        failureCallback.call();
                     }
                 });
     }
@@ -96,7 +98,7 @@ public class VisionService {
         return ApiFactory.getVisionServiceApi().upload(body);
     }
 
-    private void analyzeImage(String checksum, final MyParamCallable<VisionResult> callable) {
+    private void analyzeImage(String checksum, final MyParamCallable<VisionResult> callable, final MyCallable failureCallback) {
         // Wait first for the other request to finish...
         ApiFactory.getVisionServiceApi().analyze(checksum).enqueue(new Callback<VisionResult>() {
             @Override
@@ -109,6 +111,7 @@ public class VisionService {
             @Override
             public void onFailure(Call<VisionResult> call, Throwable t) {
                 Log.e(LOG_NAME, t.getMessage());
+                failureCallback.call();
             }
         });
     }

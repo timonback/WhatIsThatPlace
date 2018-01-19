@@ -28,6 +28,7 @@ import de.timonback.android.whatisthatplace.model.vision.Landmark;
 import de.timonback.android.whatisthatplace.model.vision.Location;
 import de.timonback.android.whatisthatplace.model.vision.VisionResult;
 import de.timonback.android.whatisthatplace.service.ServiceProvider;
+import de.timonback.android.whatisthatplace.util.MyCallable;
 import de.timonback.android.whatisthatplace.util.MyParamCallable;
 
 
@@ -107,7 +108,7 @@ public class VisionFragment extends Fragment implements OnMapReadyCallback {
                 }
 
                 Landmark landmark = param.getLandmarks().get(0);
-                if(!landmark.getLocations().isEmpty() && map != null) {
+                if (!landmark.getLocations().isEmpty() && map != null) {
                     Location location = landmark.getLocations().get(0);
 
                     LatLng landmarkPosition = new LatLng(location.getLatitude(), location.getLongitude());
@@ -136,6 +137,13 @@ public class VisionFragment extends Fragment implements OnMapReadyCallback {
                         descriptionView.setText(description);
                     }
                 });
+            }
+        }, new MyCallable() {
+            @Override
+            public void call() {
+                // @Developer
+                // Make sure to also use the same AuthenticationToken (ApiParams) as in your WhatIsThatServer-Proxy
+                Toast.makeText(context, "Something went wrong. The server did not reply properly. Is the network connection turned on?", Toast.LENGTH_LONG).show();
             }
         });
     }
