@@ -10,6 +10,11 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // add to gradle.properties: MAPS_API_KEY="myKey"
+        buildConfigField("String", "MAPS_API_KEY", MAPS_API_KEY)
+        // add to gradle.properties: VISION_API_KEY="myKey"
+        buildConfigField("String", "VISION_API_KEY", VISION_API_KEY)
     }
     configurations.all {
         resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
